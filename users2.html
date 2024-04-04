@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>User Data</title>
+		<link rel="stylesheet" href="users.css" />
+	</head>
+	<body>
+		<header>
+			<a href="admin.html">
+				<img src="images/logo.png" alt="Logo" class="logo" />
+			</a>
+		</header>
+		<div id="userDataContainer"></div>
+	</body>
+	<script>
+		document.addEventListener('DOMContentLoaded', async () => {
+			const userDataContainer = document.getElementById('userDataContainer');
+			await fetch(
+				'https://demo-healthcost-insightpro.onrender.com/api/user/users'
+			).then(async (response) => {
+				const result = await response.json();
+				console.log(result);
+				const filteredUsers = result.Users.filter(
+					(user) => user.role === 'contact person' || user.role !== 'admin'
+				);
+				filteredUsers.forEach((user) => {
+					const userDiv = document.createElement('div');
+					userDiv.classList.add('user-card');
+					userDiv.innerHTML = `
+		                      <p><strong>Name:</strong> ${user.name}</p>
+		                      <p><strong>Email:</strong> ${user.email}</p>
+		                      <p><strong>Insurance name:</strong> ${
+														user.insurance_name
+													}</p>
+		                      <p><strong>Location:</strong> ${user.location}</p>
+							  <p><strong>Excel Files:</strong> ${user.excelFiles}</p>
+		                      ${
+														user.Report_and_Recommendation
+															? `<p><strong>Recommendations:</strong> ${user.Report_and_Recommendation}</p>
+		                          <p><em>Recommendations have already been responded</em></p>`
+															: `<div class="user-form">
+		                              <h3>Reports and Recommendations</h3>
+		                              <form>
+		                                  <input type="hidden" id="email" value="${user.email}">
+		                                  <label for="recommendations">Recommendations:</label>
+		                                  <textarea id="recommendations"></textarea>
+		                                  <button id="submit">Submit</button>
+		                              </form>
+		                          </div>`
+													}
+		                      <hr>
+		                  `;
+					userDataContainer.append(userDiv);
+				});
+
+				document
+					.getElementById('submit')
+					.addEventListener('click', async (e) => {
+						e.preventDefault();
+						var data = {
+							email: document.getElementById('email').value,
+							Report_and_Recommendation:
+								document.getElementById('recommendations').value,
+						};
+
+						await fetch(
+							'https://demo-healthcost-insightpro.onrender.com/api/user/update',
+							{
+								method: 'POST',
+								headers: {
+									'Content-Type': 'application/json',
+								},
+								body: JSON.stringify(data),
+							}
+						).then(async (response) => {
+							const result = await response.json();
+							console.log(result);
+							if (response.status == 200) {
+								window.location.reload();
+							}
+						});
+					});
+			});
+		});
+	</script>
+</html>
