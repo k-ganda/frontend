@@ -317,15 +317,25 @@
 							}),
 						}
 					);
-					const result = await response.json();
-					localStorage.setItem('user', JSON.stringify(result.user));
-					localStorage.setItem('token', result.token);
-					if (response.status == 200) {
-						if (result.user.role == 'admin') {
-							window.location.href = './admin.html';
-						} else {
-							window.location.href = './dashboard.html';
+					try {
+						const result = await response.json();
+						// Check response status
+						if (response.status === 200) {
+							localStorage.setItem('user', JSON.stringify(result.user));
+							localStorage.setItem('token', result.token);
+							if (result.user.role === 'admin') {
+								window.location.href = './admin.html';
+							} else {
+								window.location.href = './dashboard.html';
+							}
+						} else if (response.status === 400) {
+							alert('Invalid Password');
 						}
+					} catch (error) {
+						console.error('Error:', error);
+						alert(
+							'An error occurred. Ensure you have signed up first or check your password and try again.'
+						);
 					}
 				});
 		</script>
